@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Details</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .order-details {
+            margin-top: 20px;
+        }
+        .order-details div {
+            margin: 10px 0;
+            font-size: 18px;
+        }
+        .loading {
+            text-align: center;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Order Details</h1>
+        <div id="order-details" class="order-details"></div>
+        <div id="loading" class="loading">Loading...</div>
+    </div>
+
+    <script>
+        // Получаем ID заказа из URL (например, ?id=1)
+        const urlParams = new URLSearchParams(window.location.search);
+        const orderId = urlParams.get("id");
+
+        // Функция для получения данных о заказе
+        async function fetchOrderDetails() {
+            if (!orderId) {
+                document.getElementById("loading").textContent = "No Order ID provided in the URL.";
+                return;
+            }
+
+            try {
+                const response = await fetch(`http://localhost:8080/order?id=${orderId}`);
+                if (!response.ok) throw new Error("Order not found.");
+
+                const order = await response.json();
+
+                document.getElementById("loading").style.display = "none";
+
+                // Заполняем данные заказа
+                const orderDetails = document.getElementById("order-details");
+                orderDetails.innerHTML = `
+                    <div><strong>Order ID:</strong> ${order.id}</div>
+                    <div><strong>Name:</strong> ${order.name}</div>
+                    <div><strong>Price:</strong> $${order.price}</div>
+                `;
+            } catch (error) {
+                document.getElementById("loading").textContent = "Error fetching order details: " + error.message;
+            }
+        }
+
+        // Запускаем функцию при загрузке страницы
+        fetchOrderDetails();
+    </script>
+</body>
+</html>

@@ -1,0 +1,60 @@
+version: '3.7'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 12345678
+      POSTGRES_DB: wb_l0
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      KAFKA_BROKER: kafka:9092
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+      - kafka
+    networks:
+      - kafka_network
+
+  postgres:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 12345678
+      POSTGRES_DB: wb_l0
+    ports:
+      - "5432:5432"
+    networks:
+      - kafka_network
+
+  kafka:
+    image: bitnami/kafka:latest
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      ALLOW_PLAINTEXT_LISTENER: "yes"
+    ports:
+      - "9092:9092"
+    depends_on:
+      - zookeeper
+    networks:
+      - kafka_network
+
+  zookeeper:
+    image: bitnami/zookeeper:latest
+    environment:
+      - ALLOW_ANONYMOUS_LOGIN=yes
+    ports:
+      - "2181:2181"
+    networks:
+      - kafka_network
+
+networks:
+  kafka_network:
+    driver: bridge
